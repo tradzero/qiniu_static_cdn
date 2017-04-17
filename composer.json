@@ -1,0 +1,21 @@
+{
+    "name": "tradzero/qiniu_static_cdn",
+    "type": "library",
+    "require": {
+        "php": ">=5.5.9",
+        "qiniu/php-sdk": "^7.1",
+        "overtrue/flysystem-qiniu": "^0.0.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "Tradzero\\Uploader": "src"
+        }
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "林振宇",
+            "email": "admin@drakframe.com"
+        }
+    ]
+}
