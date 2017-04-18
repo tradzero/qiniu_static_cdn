@@ -8,7 +8,6 @@ use Qiniu\Http\Error;
 use Qiniu\Etag;
 use Illuminate\Filesystem\Filesystem as File;
 use Exception;
-use \Log;
 
 class Uploader
 {
@@ -21,6 +20,10 @@ class Uploader
     protected $bucketer;
     protected $auth;
 
+    protected $files;
+    protected $fileCount;
+    protected $proccessed;
+
     public function __construct($accessKey, $secretKey, $bucket, $domain)
     {
         $this->accessKey = $accessKey;
@@ -29,25 +32,24 @@ class Uploader
         $this->domain = $domain;
     }
 
-    public function uploadFolderFiles($folder)
+    public function getFiles()
     {
-        $files = $this->allFiles($folder);
-        foreach ($files as $item => $file) {
-            $hash = $this->checkFileLastestOrUpload($file);
-            if (! $hash) {
-                return false;
-            }
-        }
-        return true;
+        return $this->files;
     }
 
+    public function initFolderUpload($folder)
+    {
+        $this->files = $this->allFiles($folder);
+    }
+    
     public function checkFileLastestOrUpload($file)
     {
         list($response, $error) = $this->getBucketer()->stat($this->bucket, $file->getPathname());
+
         if ($error) {
             // 当获取不到该资源时 上传文件
-            if ($error->code() == 612) {
-                $result = $this->uploadFile($file->getPathname(), $file->getRealPath());
+            if ($error->code() == 612 || $error->getResponse()->statusCode == 612) {
+                $result = $this->uploadFile($file);
                 return $result[0]['hash'];
             }
         } else {
@@ -58,18 +60,19 @@ class Uploader
                 return $uploadHash;
             } else {
                 $this->delete($file->getPathname());
-                $result = $this->uploadFile($file->getPathname(), $file->getRealPath());
+                $result = $this->uploadFile($file);
                 return $result[0]['hash'];
             }
         }
     }
 
-    private function allFiles()
+    private function allFiles($folder)
     {
         $fileSystem = new File;
-        return $fileSystem->allFiles('public');
+        $allFile = $fileSystem->allFiles($folder);
+        $this->fileCount = count($allFile);
+        return $allFile;
     }
-
 
     public function getUploader()
     {
@@ -86,14 +89,23 @@ class Uploader
         return $this->auth ? : $this->auth = new Auth($this->accessKey, $this->secretKey);
     }
 
-    private function uploadFile($file, $filePath)
+    public function getFileCount()
     {
-        return $this->getUploader()
-        ->putFile(
-            $this->getAuth()->uploadToken($this->bucket),
-            $file,
-            $filePath
-        );
+        return $this->fileCount;
+    }
+
+    private function uploadFile($file)
+    {
+        if ($file->getSize() <= 0) {
+            return [['hash' => '']];
+        } else {
+            return $this->getUploader()
+            ->putFile(
+                $this->getAuth()->uploadToken($this->bucket),
+                $file->getPathname(),
+                $file->getRealPath()
+            );
+        }
     }
 
     private function delete($file)
