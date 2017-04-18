@@ -7,6 +7,7 @@ use Qiniu\Storage\UploadManager;
 use Qiniu\Http\Error;
 use Qiniu\Etag;
 use Illuminate\Filesystem\Filesystem as File;
+use Illuminate\Log\Writer as Log;
 use Exception;
 
 class Uploader
@@ -23,6 +24,10 @@ class Uploader
     protected $files;
     protected $fileCount;
     protected $proccessed;
+
+    protected $blackLists = [
+        'txt', 'htaccess', 'config', 'conf', 'php'
+    ];
 
     public function __construct($accessKey, $secretKey, $bucket, $domain)
     {
@@ -48,9 +53,11 @@ class Uploader
 
         if ($error) {
             // 当获取不到该资源时 上传文件
-            if ($error->code() == 612 || $error->getResponse()->statusCode == 612) {
+            if ($error->code() == 612) {
                 $result = $this->uploadFile($file);
                 return $result[0]['hash'];
+            } else {
+                Log::info($error);
             }
         } else {
             $uploadHash = $response['hash'];
@@ -66,13 +73,6 @@ class Uploader
         }
     }
 
-    private function allFiles($folder)
-    {
-        $fileSystem = new File;
-        $allFile = $fileSystem->allFiles($folder);
-        $this->fileCount = count($allFile);
-        return $allFile;
-    }
 
     public function getUploader()
     {
@@ -94,9 +94,16 @@ class Uploader
         return $this->fileCount;
     }
 
+    private function allFiles($folder)
+    {
+        $fileSystem = new File;
+        $allFile = $fileSystem->allFiles($folder);
+        $this->fileCount = count($allFile);
+        return $allFile;
+    }
     private function uploadFile($file)
     {
-        if ($file->getSize() <= 0) {
+        if ($file->getSize() <= 0 || in_array($file->getExtension(), $this->blackLists)) {
             return [['hash' => '']];
         } else {
             return $this->getUploader()
