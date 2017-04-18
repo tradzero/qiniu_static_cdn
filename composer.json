@@ -9,7 +9,10 @@
     "autoload": {
         "psr-4": {
             "Tradzero\\Uploader": "src"
-        }
+        },
+        "files": [
+            "src/helpers.php"
+        ],
     },
     "license": "MIT",
     "authors": [
