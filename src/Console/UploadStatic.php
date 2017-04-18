@@ -17,10 +17,10 @@ class UploadStatic extends Command
 
     public function __construct()
     {
-        $accessKey = env('QINIU_AK', '');
-        $secretKey = env('QINIU_SK', '');
-        $bucket = env('QINIU_BUCKET', '');
-        $domain = env('QINIU_URL', '');
+        $accessKey = config('staticupload.qiniu_accessKey');
+        $secretKey = config('staticupload.qiniu_secretKey');
+        $bucket = config('staticupload.qiniu_bucket');
+        $domain = config('staticupload.qiniu_domain');
 
         $uploader = new Uploader(
             $accessKey,
