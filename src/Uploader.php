@@ -37,11 +37,6 @@ class Uploader
         $this->domain = $domain;
     }
 
-    public function getFiles()
-    {
-        return $this->files;
-    }
-
     public function initFolderUpload($folder)
     {
         $this->files = $this->allFiles($folder);
@@ -73,6 +68,10 @@ class Uploader
         }
     }
 
+    public function getFiles()
+    {
+        return $this->files;
+    }
 
     public function getUploader()
     {
