@@ -8,6 +8,7 @@ use Qiniu\Http\Error;
 use Qiniu\Etag;
 use Illuminate\Filesystem\Filesystem as File;
 use Illuminate\Log\Writer as Log;
+use Illuminate\Support\Facades\Cache as Cache;
 use Exception;
 
 class Uploader
@@ -44,8 +45,11 @@ class Uploader
     
     public function checkFileLastestOrUpload($file)
     {
-        list($response, $error) = $this->getBucketer()->stat($this->bucket, $file->getPathname());
+        if ($this->checkExistByCache($file)) {
+            return [['hash' => '']];
+        }
 
+        list($response, $error) = $this->getBucketer()->stat($this->bucket, $file->getPathname());
         if ($error) {
             // 当获取不到该资源时 上传文件
             if ($error->code() == 612) {
@@ -66,6 +70,13 @@ class Uploader
                 return $result[0]['hash'];
             }
         }
+    }
+
+    public function checkExistByCache($file)
+    {
+        $modifyTime = $file->getMTime();
+        $filename = $file->getPathname();
+        return Cache::has(config('staticupload.cache_prefix') . $filename . $modifyTime);
     }
 
     public function getFiles()
@@ -105,11 +116,15 @@ class Uploader
         if ($file->getSize() <= 0 || in_array($file->getExtension(), $this->blackLists)) {
             return [['hash' => '']];
         } else {
+            $modifyTime = $file->getMTime();
+            $filename = $file->getPathname();
+            $realPath = $file->getRealPath();
+            Cache::forever(config('staticupload.cache_prefix') . $filename . $modifyTime, '1');
             return $this->getUploader()
             ->putFile(
                 $this->getAuth()->uploadToken($this->bucket),
-                $file->getPathname(),
-                $file->getRealPath()
+                $filename,
+                $realPath
             );
         }
     }
