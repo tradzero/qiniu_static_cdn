@@ -7,7 +7,7 @@ use Qiniu\Storage\UploadManager;
 use Qiniu\Http\Error;
 use Qiniu\Etag;
 use Illuminate\Filesystem\Filesystem as File;
-use Illuminate\Log\Writer as Log;
+use Illuminate\Support\Facades\Log as Log;
 use Illuminate\Support\Facades\Cache as Cache;
 use Exception;
 

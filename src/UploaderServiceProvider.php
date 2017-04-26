@@ -3,13 +3,13 @@
 namespace Tradzero\Uploader;
 
 use Illuminate\Support\ServiceProvider;
-use \Log;
+
 class UploaderServiceProvider extends ServiceProvider
 {
     public function boot()
     {
         $this->publishes([
-            __DIR__.'/src/config/staticupload.php' => config_path('staticupload.php'),
+            __DIR__.'/config/staticupload.php' => config_path('staticupload.php'),
         ]);
     }
 
