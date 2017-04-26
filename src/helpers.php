@@ -8,7 +8,7 @@ if (!function_exists('cdnAsset')) {
      * @param string $prefix 选择相对于laravel文件目录的位置 默认为public
      * @return string path 
      */
-    function cdnAsset($path, $prefix="public")
+    function cdnAsset($path, $prefix = "public")
     {
         $domain = config('staticupload.qiniu_domain');
         if (0 !== stripos($domain, 'https://') && 0 !== stripos($domain, 'http://')) {
