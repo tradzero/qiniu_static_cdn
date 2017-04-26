@@ -1,6 +1,5 @@
 {
     "name": "tradzero/qiniu_static_cdn",
-    "type": "library",
     "require": {
         "php": ">=5.5.9",
         "qiniu/php-sdk": "^7.1"
