@@ -16,7 +16,9 @@ if (!function_exists('cdnAsset')) {
             $domain = rtrim($domain, '/').'/';
         }
         $prefix = rtrim($prefix, '/') . DIRECTORY_SEPARATOR;
-        $path = PHP_OS !==  'WINNT' ? : urlencode($prefix . ltrim($path, '/'));
+        // handle windows separator problem
+        $path = PHP_OS !==  'WINNT' ?
+            : urlencode($prefix . ltrim(str_replace('/', DIRECTORY_SEPARATOR, $path), DIRECTORY_SEPARATOR));
         return $domain . $path;
     }
 }
